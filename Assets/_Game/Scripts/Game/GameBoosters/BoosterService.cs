@@ -14,7 +14,8 @@ namespace LightItUp
 	{
 		MagicHat,
 		SpringShoes,
-		MetalBoots
+		MetalBoots,
+		SeekingMissiles
 	}
 
 

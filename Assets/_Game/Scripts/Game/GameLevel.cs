@@ -477,6 +477,13 @@ namespace LightItUp.Game
 					spawnedStars.Add(Instantiate(c, s.position, Quaternion.identity, transform));
 				}
 				player.camFocus.Init();
+				
+				// Reset seeking missile usage for new level
+				var missileController = FindObjectOfType<SeekingMissileController>();
+				if (missileController != null)
+				{
+					missileController.ResetLevelUsage();
+				}
 			}
 
 
