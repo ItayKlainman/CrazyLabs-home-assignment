@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using LightItUp.BlockComponents;
 using LightItUp.Data;
 
 namespace LightItUp.Game

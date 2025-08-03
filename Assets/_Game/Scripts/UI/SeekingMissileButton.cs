@@ -20,7 +20,7 @@ namespace LightItUp.UI
         [Header("Visual States")]
         [SerializeField] private Color readyColor = Color.red;
         [SerializeField] private Color usedColor = Color.gray;
-        [SerializeField] private Color disabledColor = Color.darkGray;
+        [SerializeField] private Color disabledColor = new Color(0.3f, 0.3f, 0.3f, 1f);
 
         // Private fields
         private bool isReady = true;
