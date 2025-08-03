@@ -10,8 +10,6 @@ namespace LightItUp.UI
     {
         [Header("UI Components")]
         [SerializeField] private Image buttonImage;
-        [SerializeField] private TextMeshProUGUI buttonText;
-        [SerializeField] private Image missileIcon;
 
         [Header("Configuration")]
         [SerializeField] private SeekingMissileConfig config;
@@ -22,62 +20,89 @@ namespace LightItUp.UI
         [SerializeField] private Color usedColor = Color.gray;
         [SerializeField] private Color disabledColor = new Color(0.3f, 0.3f, 0.3f, 1f);
 
-        // Private fields
         private bool isReady = true;
         private bool isUsed = false;
 
-        // Events
         public System.Action OnButtonPressed;
         public System.Action OnButtonStateChanged;
 
         private void Awake()
         {
-            // Get components if not assigned
-            if (buttonImage == null) buttonImage = GetComponent<Image>();
-            if (buttonText == null) buttonText = GetComponentInChildren<TextMeshProUGUI>();
-            if (missileIcon == null) missileIcon = transform.Find("MissileIcon")?.GetComponent<Image>();
-
-            // Find references if not assigned
-            if (missileController == null)
-            {
-                missileController = FindObjectOfType<SeekingMissileController>();
-            }
-
-            if (config == null)
-            {
-                // Try to find config in resources
-                config = Resources.Load<SeekingMissileConfig>("SeekingMissileConfig");
-            }
+            ValidateCriticalComponents();
+            FindMissingReferences();
         }
 
         private void Start()
         {
+            if (missileController != null)
+            {
+                missileController.OnMissilesSpawned += OnMissilesSpawned;
+                missileController.OnMissilesCompleted += OnMissilesCompleted;
+            }
             UpdateButtonState();
         }
 
-        private void Update()
+        private void OnDestroy()
         {
-            // Check if we can use missiles
-            bool canUse = missileController != null && missileController.CanUseMissiles();
-            
-            if (isReady != canUse || isUsed != missileController?.HasBeenUsedThisLevel)
+            if (missileController != null)
             {
-                UpdateButtonState();
+                missileController.OnMissilesSpawned -= OnMissilesSpawned;
+                missileController.OnMissilesCompleted -= OnMissilesCompleted;
             }
+        }
+
+        private void ValidateCriticalComponents()
+        {
+            if (buttonImage == null)
+            {
+                buttonImage = GetComponent<Image>();
+                if (buttonImage == null)
+                {
+                    LogCriticalError("Missing Image component! This is critical for button functionality.");
+                }
+            }
+
+            if (missileController == null)
+            {
+                missileController = FindObjectOfType<SeekingMissileController>();
+                if (missileController == null)
+                {
+                    LogCriticalError("No SeekingMissileController found in scene! This is critical for button functionality.");
+                }
+            }
+        }
+
+        private void LogCriticalError(string message)
+        {
+            Debug.LogError($"[{gameObject.name}] SeekingMissileButton: {message}");
+        }
+
+        private void FindMissingReferences()
+        {
+            if (config == null)
+                config = Resources.Load<SeekingMissileConfig>("SeekingMissileConfig");
+        }
+
+        private void OnMissilesSpawned()
+        {
+            isUsed = true;
+            UpdateButtonState();
+        }
+
+        private void OnMissilesCompleted()
+        {
+            UpdateButtonState();
         }
 
         public void OnPointerClick(PointerEventData eventData)
         {
             if (!isReady || isUsed) return;
 
-            // Trigger missile spawning
             if (missileController != null)
             {
                 missileController.SpawnMissiles();
                 OnButtonPressed?.Invoke();
             }
-
-            UpdateButtonState();
         }
 
         private void UpdateButtonState()
@@ -87,47 +112,36 @@ namespace LightItUp.UI
             isReady = missileController.CanUseMissiles();
             isUsed = missileController.HasBeenUsedThisLevel;
 
-            // Update visual appearance
-            if (buttonImage != null)
-            {
-                if (isUsed)
-                {
-                    buttonImage.color = usedColor;
-                }
-                else if (isReady)
-                {
-                    buttonImage.color = readyColor;
-                }
-                else
-                {
-                    buttonImage.color = disabledColor;
-                }
-            }
-
-            // Update text
-            if (buttonText != null)
-            {
-                if (isUsed)
-                {
-                    buttonText.text = "USED";
-                }
-                else if (isReady)
-                {
-                    buttonText.text = "MISSILES";
-                }
-                else
-                {
-                    buttonText.text = "DISABLED";
-                }
-            }
-
-            // Update icon
-            if (missileIcon != null)
-            {
-                missileIcon.enabled = isReady && !isUsed;
-            }
-
+            ButtonState currentState = GetCurrentState();
+            ApplyVisualState(currentState);
             OnButtonStateChanged?.Invoke();
+        }
+
+        private ButtonState GetCurrentState()
+        {
+            if (isUsed) return ButtonState.Used;
+            if (isReady) return ButtonState.Ready;
+            return ButtonState.Disabled;
+        }
+
+        private void ApplyVisualState(ButtonState state)
+        {
+            if (buttonImage == null) return;
+            
+            switch (state)
+            {
+                case ButtonState.Ready:
+                    buttonImage.color = readyColor;
+                    break;
+
+                case ButtonState.Used:
+                    buttonImage.color = usedColor;
+                    break;
+
+                case ButtonState.Disabled:
+                    buttonImage.color = disabledColor;
+                    break;
+            }
         }
 
         public void SetConfig(SeekingMissileConfig missileConfig)
@@ -137,7 +151,20 @@ namespace LightItUp.UI
 
         public void SetMissileController(SeekingMissileController controller)
         {
+            if (missileController != null)
+            {
+                missileController.OnMissilesSpawned -= OnMissilesSpawned;
+                missileController.OnMissilesCompleted -= OnMissilesCompleted;
+            }
+
             missileController = controller;
+            
+            if (missileController != null)
+            {
+                missileController.OnMissilesSpawned += OnMissilesSpawned;
+                missileController.OnMissilesCompleted += OnMissilesCompleted;
+            }
+            
             UpdateButtonState();
         }
 
@@ -149,5 +176,12 @@ namespace LightItUp.UI
 
         public bool IsReady => isReady;
         public bool IsUsed => isUsed;
+
+        private enum ButtonState
+        {
+            Ready,
+            Used,
+            Disabled
+        }
     }
 } 
