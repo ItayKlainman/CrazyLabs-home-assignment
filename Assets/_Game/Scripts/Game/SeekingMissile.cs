@@ -17,7 +17,6 @@ namespace LightItUp.Game
         [Header("Configuration")]
         [SerializeField] private SeekingMissileConfig config;
 
-        // Private fields
         private BlockController currentTarget;
         private float lifetime;
         private bool isActive = true;
@@ -28,32 +27,25 @@ namespace LightItUp.Game
 
         private void Awake()
         {
-            // Get components if not assigned
+            GetComponents();
+            InitializeRigidbody();
+        }
+
+        private void GetComponents()
+        {
             if (rb == null) rb = GetComponent<Rigidbody2D>();
             if (col == null) col = GetComponent<Collider2D>();
             if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
             if (trailRenderer == null) trailRenderer = GetComponent<TrailRenderer>();
+        }
 
-            // Initialize components
+        private void InitializeRigidbody()
+        {
             if (rb != null)
             {
                 rb.gravityScale = 0f;
                 rb.drag = 0f;
                 rb.angularDrag = 0f;
-            }
-
-            // Set up visual appearance
-            if (spriteRenderer != null && config != null)
-            {
-                spriteRenderer.color = config.missileColor;
-                transform.localScale = Vector3.one * config.missileSize;
-            }
-
-            // Set up trail renderer
-            if (trailRenderer != null && config != null)
-            {
-                trailRenderer.startColor = config.missileColor;
-                trailRenderer.endColor = new Color(config.missileColor.r, config.missileColor.g, config.missileColor.b, 0f);
             }
         }
 
@@ -79,13 +71,13 @@ namespace LightItUp.Game
         public void Initialize(SeekingMissileConfig missileConfig)
         {
             config = missileConfig;
-
+            
             if (spriteRenderer != null)
             {
                 spriteRenderer.color = config.missileColor;
                 transform.localScale = Vector3.one * config.missileSize;
             }
-
+            
             if (trailRenderer != null)
             {
                 trailRenderer.startColor = config.missileColor;
@@ -100,21 +92,13 @@ namespace LightItUp.Game
         {
             if (!isActive || config == null) return;
 
-            // Update lifetime
-            lifetime += Time.deltaTime;
-            if (lifetime >= config.maxLifetime)
-            {
-                DestroyMissile();
-                return;
-            }
-
-            // Find target if we don't have one
+            UpdateLifetime();
+            
             if (currentTarget == null || !currentTarget.gameObject.activeInHierarchy)
             {
                 FindTarget();
             }
-
-            // Move towards target
+            
             if (currentTarget != null)
             {
                 MoveTowardsTarget();
@@ -123,83 +107,27 @@ namespace LightItUp.Game
 
         private void FindTarget()
         {
-            if (config == null) return;
+            if (!IsConfigValid()) return;
 
-            // Get all blocks from current level
-            var currentLevel = GameManager.Instance?.currentLevel;
-            if (currentLevel == null || currentLevel.blocks == null) return;
-
-            // Filter unlit blocks
-            var unlitBlocks = currentLevel.blocks.Where(b => b != null && b.gameObject.activeInHierarchy && !b.IsLit).ToList();
-            if (unlitBlocks.Count == 0) return;
-
-            // Prioritize regular blocks if configured
-            if (config.prioritizeRegularBlocks)
-            {
-                var regularBlocks = unlitBlocks.Where(b => !b.useExplode && !b.useMove).ToList();
-                if (regularBlocks.Count > 0)
-                {
-                    unlitBlocks = regularBlocks;
-                }
-            }
-
-            // Find nearest block within detection radius
-            BlockController nearestBlock = null;
-            float nearestDistance = float.MaxValue;
-
-            foreach (var block in unlitBlocks)
-            {
-                float distance = Vector2.Distance(transform.position, block.transform.position);
-                if (distance <= config.detectionRadius && distance < nearestDistance)
-                {
-                    nearestDistance = distance;
-                    nearestBlock = block;
-                }
-            }
-
-            currentTarget = nearestBlock;
+            currentTarget = FindBestTarget();
         }
 
         private void MoveTowardsTarget()
         {
-            if (currentTarget == null || config == null) return;
-
             Vector2 direction = (currentTarget.transform.position - transform.position).normalized;
-            
-            // Calculate desired velocity
             Vector2 desiredVelocity = direction * config.missileSpeed;
             
-            // Smoothly rotate towards target
-            float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            float currentAngle = transform.eulerAngles.z;
-            float angleDifference = Mathf.DeltaAngle(currentAngle, targetAngle);
-            
-            // Apply rotation
-            float rotationStep = config.rotationSpeed * Time.deltaTime;
-            float newAngle = currentAngle + Mathf.Clamp(angleDifference, -rotationStep, rotationStep);
-            transform.rotation = Quaternion.Euler(0, 0, newAngle);
-
-            // Update velocity
-            velocity = Vector2.Lerp(velocity, desiredVelocity, Time.deltaTime * 5f);
-            
-            // Apply movement
-            if (rb != null)
-            {
-                rb.velocity = velocity;
-            }
-            else
-            {
-                transform.position += (Vector3)velocity * Time.deltaTime;
-            }
+            UpdateRotationTowardsDirection(direction);
+            UpdateVelocityTowardsTarget(desiredVelocity);
+            ApplyMovementToTarget();
         }
 
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (!isActive) return;
 
-            // Check if we hit a block
             var blockController = other.GetComponent<BlockController>();
-            if (blockController != null && !blockController.IsLit)
+            if (IsValidBlockTarget(blockController))
             {
                 HitBlock(blockController);
             }
@@ -207,26 +135,9 @@ namespace LightItUp.Game
 
         private void HitBlock(BlockController block)
         {
-            if (!isActive || config == null) return;
-
-            // Apply force to the block
-            if (config.forceOnImpact > 0f)
-            {
-                var blockRb = block.GetComponent<Rigidbody2D>();
-                if (blockRb != null)
-                {
-                    Vector2 forceDirection = (block.transform.position - transform.position).normalized;
-                    blockRb.AddForce(forceDirection * config.forceOnImpact, ForceMode2D.Impulse);
-                }
-            }
-
-            // Trigger collision with the block
+            ApplyImpactForce(block);
             block.Collide();
-
-            // Notify listeners
             OnMissileHitBlock?.Invoke(this, block);
-
-            // Destroy the missile
             DestroyMissile();
         }
 
@@ -245,5 +156,92 @@ namespace LightItUp.Game
 
         public bool IsActive => isActive;
         public BlockController CurrentTarget => currentTarget;
+
+        private bool IsValidBlockTarget(BlockController block) => block != null && !block.IsLit;
+
+        private void UpdateLifetime()
+        {
+            lifetime += Time.deltaTime;
+            if (lifetime >= config.maxLifetime)
+            {
+                DestroyMissile();
+            }
+        }
+
+
+
+        private BlockController FindBestTarget()
+        {
+            var currentLevel = GameManager.Instance?.currentLevel;
+            if (currentLevel?.blocks == null) return null;
+
+            BlockController bestTarget = null;
+            float bestDistance = float.MaxValue;
+
+            foreach (var block in currentLevel.blocks)
+            {
+                if (!IsValidTargetBlock(block)) continue;
+
+                float distance = Vector2.Distance(transform.position, block.transform.position);
+                if (distance > config.detectionRadius || distance >= bestDistance) continue;
+
+                if (config.prioritizeRegularBlocks && (block.useExplode || block.useMove))
+                {
+                    continue;
+                }
+
+                bestDistance = distance;
+                bestTarget = block;
+            }
+
+            return bestTarget;
+        }
+
+        private bool IsValidTargetBlock(BlockController block)
+        {
+            return block != null && block.gameObject.activeInHierarchy && !block.IsLit;
+        }
+
+        private void UpdateRotationTowardsDirection(Vector2 direction)
+        {
+            float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            float currentAngle = transform.eulerAngles.z;
+            float angleDifference = Mathf.DeltaAngle(currentAngle, targetAngle);
+            
+            float rotationStep = config.rotationSpeed * Time.deltaTime;
+            float newAngle = currentAngle + Mathf.Clamp(angleDifference, -rotationStep, rotationStep);
+            transform.rotation = Quaternion.Euler(0, 0, newAngle);
+        }
+
+        private void UpdateVelocityTowardsTarget(Vector2 desiredVelocity)
+        {
+            velocity = Vector2.Lerp(velocity, desiredVelocity, Time.deltaTime * 5f);
+        }
+
+        private void ApplyMovementToTarget()
+        {
+            if (rb != null)
+            {
+                rb.velocity = velocity;
+            }
+            else
+            {
+                transform.position += (Vector3)velocity * Time.deltaTime;
+            }
+        }
+
+        private void ApplyImpactForce(BlockController block)
+        {
+            if (config.forceOnImpact <= 0f) return;
+
+            var blockRb = block.GetComponent<Rigidbody2D>();
+            if (blockRb != null)
+            {
+                Vector2 forceDirection = (block.transform.position - transform.position).normalized;
+                blockRb.AddForce(forceDirection * config.forceOnImpact, ForceMode2D.Impulse);
+            }
+        }
+
+
     }
 } 
