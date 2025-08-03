@@ -6,7 +6,7 @@ using LightItUp.Data;
 
 namespace LightItUp.Game
 {
-    public class SeekingMissile : MonoBehaviour
+    public class SeekingMissile : PooledObject
     {
         [Header("Components")]
         [SerializeField] private Rigidbody2D rb;
@@ -23,9 +23,8 @@ namespace LightItUp.Game
         private bool isActive = true;
         private Vector2 velocity;
 
-        // Events
-        public System.Action<SeekingMissile> OnMissileDestroyed;
-        public System.Action<SeekingMissile, BlockController> OnMissileHitBlock;
+        public System.Action<SeekingMissile> OnMissileDestroyed { get; private set; }
+        public System.Action<SeekingMissile, BlockController> OnMissileHitBlock { get; private set; }
 
         private void Awake()
         {
@@ -58,15 +57,29 @@ namespace LightItUp.Game
             }
         }
 
+        public override void OnInitPoolObj()
+        {
+            base.OnInitPoolObj();
+            isActive = true;
+            lifetime = 0f;
+            currentTarget = null;
+            velocity = Vector2.zero;
+        }
+
+        public override void OnReturnedPoolObj()
+        {
+            base.OnReturnedPoolObj();
+            isActive = false;
+            if (trailRenderer != null)
+            {
+                trailRenderer.enabled = false;
+            }
+        }
+
         public void Initialize(SeekingMissileConfig missileConfig)
         {
             config = missileConfig;
-            lifetime = 0f;
-            isActive = true;
-            currentTarget = null;
-            velocity = Vector2.zero;
 
-            // Update visual appearance
             if (spriteRenderer != null)
             {
                 spriteRenderer.color = config.missileColor;
@@ -77,9 +90,9 @@ namespace LightItUp.Game
             {
                 trailRenderer.startColor = config.missileColor;
                 trailRenderer.endColor = new Color(config.missileColor.r, config.missileColor.g, config.missileColor.b, 0f);
+                trailRenderer.enabled = true;
             }
 
-            // Find initial target
             FindTarget();
         }
 
@@ -221,17 +234,8 @@ namespace LightItUp.Game
         {
             if (!isActive) return;
 
-            isActive = false;
             OnMissileDestroyed?.Invoke(this);
-            
-            // Disable trail renderer to prevent visual artifacts
-            if (trailRenderer != null)
-            {
-                trailRenderer.enabled = false;
-            }
-
-            // Destroy the game object
-            Destroy(gameObject);
+            ObjectPool.ReturnSeekingMissile(this);
         }
 
         public void SetConfig(SeekingMissileConfig missileConfig)

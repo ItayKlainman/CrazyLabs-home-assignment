@@ -23,8 +23,8 @@ namespace LightItUp.UI
         private bool isReady = true;
         private bool isUsed = false;
 
-        public System.Action OnButtonPressed;
-        public System.Action OnButtonStateChanged;
+        public System.Action OnButtonPressed { get; private set; }
+        public System.Action OnButtonStateChanged { get; private set; }
 
         private void Awake()
         {

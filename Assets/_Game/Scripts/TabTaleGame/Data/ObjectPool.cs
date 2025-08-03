@@ -24,6 +24,9 @@ namespace LightItUp.Data
         public ParticleFXBasic starPickupFXPrefab;
         public ObjectPool<ParticleFXBasic> starPickupFXs;
 
+        public SeekingMissile seekingMissilePrefab;
+        public ObjectPool<SeekingMissile> seekingMissiles;
+
         public void Init() { }
         public override void Awake()
         {
@@ -33,6 +36,7 @@ namespace LightItUp.Data
             celebrationFXs = GetPool(celebrationFXPrefab, 2, transform);
             tutorialTexts = GetPool(tutorialTextPrefab, 4, transform);
             starPickupFXs = GetPool(starPickupFXPrefab, 3, transform);
+            seekingMissiles = GetPool(seekingMissilePrefab, 0, transform);
         }
         ObjectPool<T> GetPool<T>(T prefab, int startCount, Transform t) where T : PooledObject
         {
@@ -85,6 +89,24 @@ namespace LightItUp.Data
         public static void ReturnStarFX(ParticleFXBasic starFX)
         {
             Instance.starPickupFXs.ReturnObject(starFX);
+        }
+
+        public static SeekingMissile GetSeekingMissile()
+        {
+            return Instance.seekingMissiles.GetObject();
+        }
+
+        public static void PrewarmSeekingMissiles(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var missile = Instance.seekingMissiles.GetObject();
+                Instance.seekingMissiles.ReturnObject(missile);
+            }
+        }
+        public static void ReturnSeekingMissile(SeekingMissile missile)
+        {
+            Instance.seekingMissiles.ReturnObject(missile);
         }
     }
 

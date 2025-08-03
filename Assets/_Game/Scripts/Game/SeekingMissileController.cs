@@ -11,23 +11,24 @@ namespace LightItUp.Game
         [SerializeField] private SeekingMissileConfig config;
         
         [Header("References")]
-        [SerializeField] private GameObject missilePrefab;
         [SerializeField] private CameraFocus cameraFocus;
         [SerializeField] private PlayerController playerController;
 
-        // Private fields
         private List<SeekingMissile> activeMissiles = new List<SeekingMissile>();
         private bool hasBeenUsedThisLevel = false;
         private bool isSpawning = false;
 
-        // Events
-        public System.Action OnMissilesSpawned;
-        public System.Action OnMissilesCompleted;
-        public System.Action OnMissileHitBlock;
+        public System.Action OnMissilesSpawned { get; private set; }
+        public System.Action OnMissilesCompleted { get; private set; }
+        public System.Action OnMissileHitBlock { get; private set; }
 
         private void Awake()
         {
-            // Find references if not assigned
+            FindMissingReferences();
+        }
+
+        private void FindMissingReferences()
+        {
             if (cameraFocus == null)
             {
                 var player = FindObjectOfType<PlayerController>();
@@ -45,29 +46,10 @@ namespace LightItUp.Game
 
         private void Start()
         {
-            // Reset usage when level starts
             ResetLevelUsage();
         }
 
-        public void SetConfig(SeekingMissileConfig missileConfig)
-        {
-            config = missileConfig;
-        }
 
-        public void SetMissilePrefab(GameObject prefab)
-        {
-            missilePrefab = prefab;
-        }
-
-        public void SetCameraFocus(CameraFocus focus)
-        {
-            cameraFocus = focus;
-        }
-
-        public void SetPlayerController(PlayerController player)
-        {
-            playerController = player;
-        }
 
         public bool CanUseMissiles()
         {
@@ -83,20 +65,18 @@ namespace LightItUp.Game
 
         private IEnumerator SpawnMissilesCoroutine()
         {
-            if (config == null || missilePrefab == null || playerController == null) yield break;
+            if (config == null || playerController == null) yield break;
 
             isSpawning = true;
             hasBeenUsedThisLevel = true;
 
-            // Clear any existing missiles
             ClearActiveMissiles();
+            ObjectPool.PrewarmSeekingMissiles(config.missileCount);
 
-            // Spawn missiles with delay
             for (int i = 0; i < config.missileCount; i++)
             {
                 SpawnSingleMissile();
                 
-                // Wait before spawning next missile
                 if (i < config.missileCount - 1)
                 {
                     yield return new WaitForSeconds(config.spawnDelay);
@@ -109,22 +89,21 @@ namespace LightItUp.Game
 
         private void SpawnSingleMissile()
         {
-            if (missilePrefab == null || playerController == null) return;
+            if (playerController == null) return;
 
-            // Spawn missile at player position
             Vector3 spawnPosition = playerController.transform.position;
-            GameObject missileObject = Instantiate(missilePrefab, spawnPosition, Quaternion.identity);
+            SeekingMissile missile = ObjectPool.GetSeekingMissile();
             
-            SeekingMissile missile = missileObject.GetComponent<SeekingMissile>();
             if (missile != null)
             {
+                missile.transform.position = spawnPosition;
+                missile.transform.rotation = Quaternion.identity;
                 missile.Initialize(config);
                 missile.OnMissileDestroyed += OnMissileDestroyed;
                 missile.OnMissileHitBlock += OnMissileHitBlockHandler;
                 
                 activeMissiles.Add(missile);
 
-                // Add to camera tracking if enabled
                 if (config.includeInCameraTracking && cameraFocus != null)
                 {
                     var missileCollider = missile.GetComponent<Collider2D>();
@@ -143,7 +122,6 @@ namespace LightItUp.Game
                 activeMissiles.Remove(missile);
             }
 
-            // Check if all missiles are destroyed
             if (activeMissiles.Count == 0)
             {
                 OnMissilesCompleted?.Invoke();
