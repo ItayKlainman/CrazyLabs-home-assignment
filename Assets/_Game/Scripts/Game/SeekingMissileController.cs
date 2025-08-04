@@ -148,12 +148,24 @@ namespace LightItUp.Game
             {
                 missile?.DestroyMissile();
             }
+            
+            // Release all reserved targets back to pool
+            if (SeekingMissileTargetManager.Instance != null)
+            {
+                SeekingMissileTargetManager.Instance.ReleaseAllTargets();
+            }
         }
 
         public void ResetLevelUsage()
         {
             hasBeenUsedThisLevel = false;
             ClearActiveMissiles();
+            
+            // Initialize target pool for new level
+            if (SeekingMissileTargetManager.Instance != null)
+            {
+                SeekingMissileTargetManager.Instance.InitializeTargetPool();
+            }
             
             TryResetButton();
             StartCoroutine(TryResetButtonDelayed());

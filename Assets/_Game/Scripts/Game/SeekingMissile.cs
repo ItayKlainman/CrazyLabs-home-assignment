@@ -110,7 +110,14 @@ namespace LightItUp.Game
         {
             if (config == null) return;
 
-            currentTarget = FindBestTarget();
+            if (SeekingMissileTargetManager.Instance != null)
+            {
+                currentTarget = SeekingMissileTargetManager.Instance.GetNextTarget(transform.position, config);
+            }
+            else
+            {
+                currentTarget = FindBestTarget();
+            }
         }
 
         private void MoveTowardsTarget()
@@ -145,6 +152,12 @@ namespace LightItUp.Game
         public void DestroyMissile()
         {
             if (!isActive) return;
+
+            // Release target back to pool if it wasn't hit
+            if (currentTarget != null && SeekingMissileTargetManager.Instance != null)
+            {
+                SeekingMissileTargetManager.Instance.ReleaseTarget(currentTarget);
+            }
 
             OnMissileDestroyed?.Invoke(this);
             ObjectPool.ReturnSeekingMissile(this);
