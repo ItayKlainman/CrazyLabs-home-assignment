@@ -193,15 +193,40 @@ namespace LightItUp.Game
 
         public void ResetLevelUsage()
         {
+            Debug.Log("[SeekingMissileController] ResetLevelUsage called");
             hasBeenUsedThisLevel = false;
             ClearActiveMissiles();
             
+            // Try to reset button immediately
+            TryResetButton();
+            
+            // Also try again after a short delay in case of timing issues
+            StartCoroutine(TryResetButtonDelayed());
+        }
+        
+        private void TryResetButton()
+        {
+            Debug.Log("[SeekingMissileController] Looking for SeekingMissileButton...");
             var missileButton = FindObjectOfType<SeekingMissileButton>();
+            Debug.Log($"[SeekingMissileController] Found missile button: {missileButton != null}");
+            
             if (missileButton != null)
             {
+                Debug.Log("[SeekingMissileController] About to call ResetButton()");
                 missileButton.ResetButton();
                 Debug.Log("[SeekingMissileController] Reset missile button");
             }
+            else
+            {
+                Debug.LogWarning("[SeekingMissileController] No SeekingMissileButton found to reset!");
+            }
+        }
+        
+        private System.Collections.IEnumerator TryResetButtonDelayed()
+        {
+            yield return new WaitForSeconds(0.2f);
+            Debug.Log("[SeekingMissileController] Trying delayed button reset...");
+            TryResetButton();
         }
 
         public bool HasBeenUsedThisLevel => hasBeenUsedThisLevel;
