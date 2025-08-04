@@ -21,6 +21,8 @@ namespace LightItUp.Sound
         public const string G5 = "G5";
         public const string PopupOpen = "PopupOpen";
         public const string PopupClose = "PopupClose";
+        public const string MissileLaunch = "MissileLaunch";
+        public const string MissileHit = "MissileHit";
 
         public static List<string> allIds = new List<string>() {
             "",
@@ -40,6 +42,8 @@ namespace LightItUp.Sound
             "G5",
             "PopupOpen",
             "PopupClose",
+            "MissileLaunch",
+            "MissileHit",
         };
     }
 }

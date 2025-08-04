@@ -111,6 +111,7 @@ namespace LightItUp.Game
             if (config == null) return;
 
             currentTarget = FindBestTarget();
+            Debug.Log($"[SeekingMissile] Found target: {currentTarget != null} at position: {currentTarget?.transform.position}");
         }
 
         private void MoveTowardsTarget()
@@ -171,26 +172,76 @@ namespace LightItUp.Game
             var currentLevel = GameManager.Instance?.currentLevel;
             if (currentLevel?.blocks == null) return null;
 
-            BlockController bestTarget = null;
-            float bestDistance = float.MaxValue;
+            var validTargets = new List<BlockController>();
+            var targetedBlocks = GetTargetedBlocks();
 
             foreach (var block in currentLevel.blocks)
             {
                 if (!IsValidTargetBlock(block)) continue;
 
                 float distance = Vector2.Distance(transform.position, block.transform.position);
-                if (distance > config.detectionRadius || distance >= bestDistance) continue;
+                if (distance > config.detectionRadius) continue;
 
                 if (config.prioritizeRegularBlocks && (block.useExplode || block.useMove))
                 {
                     continue;
                 }
 
-                bestDistance = distance;
-                bestTarget = block;
+                if (!targetedBlocks.Contains(block))
+                {
+                    validTargets.Add(block);
+                }
             }
 
-            return bestTarget;
+            if (validTargets.Count == 0)
+            {
+                validTargets = GetValidBlocksInRange();
+            }
+
+            if (validTargets.Count == 0) return null;
+
+            return validTargets[Random.Range(0, validTargets.Count)];
+        }
+
+        private List<BlockController> GetTargetedBlocks()
+        {
+            var targetedBlocks = new List<BlockController>();
+            var missiles = FindObjectsOfType<SeekingMissile>();
+            
+            foreach (var missile in missiles)
+            {
+                if (missile != this && missile.IsActive && missile.CurrentTarget != null)
+                {
+                    targetedBlocks.Add(missile.CurrentTarget);
+                }
+            }
+            
+            return targetedBlocks;
+        }
+
+        private List<BlockController> GetValidBlocksInRange()
+        {
+            var validBlocks = new List<BlockController>();
+            var currentLevel = GameManager.Instance?.currentLevel;
+            
+            if (currentLevel?.blocks == null) return validBlocks;
+
+            foreach (var block in currentLevel.blocks)
+            {
+                if (!IsValidTargetBlock(block)) continue;
+
+                float distance = Vector2.Distance(transform.position, block.transform.position);
+                if (distance > config.detectionRadius) continue;
+
+                if (config.prioritizeRegularBlocks && (block.useExplode || block.useMove))
+                {
+                    continue;
+                }
+
+                validBlocks.Add(block);
+            }
+            
+            return validBlocks;
         }
 
         private bool IsValidTargetBlock(BlockController block)

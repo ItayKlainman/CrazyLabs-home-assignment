@@ -89,21 +89,38 @@ namespace LightItUp.UI
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (!isReady || isUsed) return;
+            Debug.Log($"[SeekingMissileButton] Button clicked! Ready: {isReady}, Used: {isUsed}, Controller: {missileController != null}");
+            
+            if (!isReady || isUsed) 
+            {
+                Debug.Log("[SeekingMissileButton] Button not ready or already used, returning");
+                return;
+            }
 
             if (missileController != null)
             {
+                Debug.Log("[SeekingMissileButton] Calling SpawnMissiles on controller");
                 missileController.SpawnMissiles();
                 OnButtonPressed?.Invoke();
+            }
+            else
+            {
+                Debug.LogError("[SeekingMissileButton] No missile controller assigned!");
             }
         }
 
         private void UpdateButtonState()
         {
-            if (missileController == null) return;
+            if (missileController == null) 
+            {
+                Debug.Log("[SeekingMissileButton] No missile controller, cannot update state");
+                return;
+            }
 
             isReady = missileController.CanUseMissiles();
             isUsed = missileController.HasBeenUsedThisLevel;
+
+            Debug.Log($"[SeekingMissileButton] Button state updated - Ready: {isReady}, Used: {isUsed}");
 
             ButtonState currentState = GetCurrentState();
             ApplyVisualState(currentState);
