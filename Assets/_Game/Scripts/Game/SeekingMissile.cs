@@ -111,7 +111,6 @@ namespace LightItUp.Game
             if (config == null) return;
 
             currentTarget = FindBestTarget();
-            Debug.Log($"[SeekingMissile] Found target: {currentTarget != null} at position: {currentTarget?.transform.position}");
         }
 
         private void MoveTowardsTarget()

@@ -40,10 +40,8 @@ namespace LightItUp.UI
                 missileController.OnMissilesCompleted += OnMissilesCompleted;
             }
             
-            // Check if we need to reset the button state for a new level
             if (missileController != null && !missileController.HasBeenUsedThisLevel)
             {
-                Debug.Log("[SeekingMissileButton] New level detected, resetting button state");
                 ResetButton();
             }
             else
@@ -66,19 +64,11 @@ namespace LightItUp.UI
             if (buttonImage == null)
             {
                 buttonImage = GetComponent<Image>();
-                if (buttonImage == null)
-                {
-                    Debug.LogError($"[{gameObject.name}] SeekingMissileButton: Missing Image component!");
-                }
             }
 
             if (missileController == null)
             {
                 missileController = FindObjectOfType<SeekingMissileController>();
-                if (missileController == null)
-                {
-                    Debug.LogError($"[{gameObject.name}] SeekingMissileButton: No SeekingMissileController found in scene!");
-                }
             }
 
             if (config == null)
@@ -100,51 +90,23 @@ namespace LightItUp.UI
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            Debug.Log($"[SeekingMissileButton] Button clicked! Ready: {isReady}, Used: {isUsed}, Controller: {missileController != null}");
-            Debug.Log($"[SeekingMissileButton] Controller state - CanUseMissiles: {missileController?.CanUseMissiles()}, HasBeenUsedThisLevel: {missileController?.HasBeenUsedThisLevel}");
-            
-            if (!isReady || isUsed) 
-            {
-                Debug.Log("[SeekingMissileButton] Button not ready or already used, returning");
-                return;
-            }
+            if (!isReady || isUsed) return;
 
             if (missileController != null)
             {
-                Debug.Log("[SeekingMissileButton] Calling SpawnMissiles on controller");
                 missileController.SpawnMissiles();
                 OnButtonPressed?.Invoke();
-            }
-            else
-            {
-                Debug.LogError("[SeekingMissileButton] No missile controller assigned!");
             }
         }
 
         private void UpdateButtonState()
         {
-            Debug.Log($"[SeekingMissileButton] UpdateButtonState called - Controller: {missileController != null}, isResetting: {isResetting}");
+            if (isResetting) return;
             
-            if (isResetting)
-            {
-                Debug.Log("[SeekingMissileButton] Skipping UpdateButtonState because button is being reset");
-                return;
-            }
-            
-            if (missileController == null) 
-            {
-                Debug.Log("[SeekingMissileButton] No missile controller, cannot update state");
-                return;
-            }
+            if (missileController == null) return;
 
-            bool wasReady = isReady;
-            bool wasUsed = isUsed;
-            
             isReady = missileController.CanUseMissiles();
             isUsed = missileController.HasBeenUsedThisLevel;
-
-            Debug.Log($"[SeekingMissileButton] Button state updated - Ready: {isReady} (was: {wasReady}), Used: {isUsed} (was: {wasUsed})");
-            Debug.Log($"[SeekingMissileButton] Controller state - CanUseMissiles: {missileController.CanUseMissiles()}, HasBeenUsedThisLevel: {missileController.HasBeenUsedThisLevel}");
 
             ButtonState currentState = GetCurrentState();
             ApplyVisualState(currentState);
@@ -204,18 +166,14 @@ namespace LightItUp.UI
 
         public void ResetButton()
         {
-            Debug.Log($"[SeekingMissileButton] ResetButton called - Current state: Ready={isReady}, Used={isUsed}");
             isResetting = true;
             isUsed = false;
-            isReady = true; // Force ready state
-            Debug.Log("[SeekingMissileButton] Forced button state - Ready: true, Used: false");
+            isReady = true;
             
             ButtonState currentState = GetCurrentState();
-            Debug.Log($"[SeekingMissileButton] Button state after reset: {currentState}");
             ApplyVisualState(currentState);
             OnButtonStateChanged?.Invoke();
             
-            // Reset the flag after a short delay to allow the new level to start
             StartCoroutine(ResetFlagAfterDelay());
         }
         
@@ -223,7 +181,6 @@ namespace LightItUp.UI
         {
             yield return new WaitForSeconds(0.1f);
             isResetting = false;
-            Debug.Log("[SeekingMissileButton] Reset flag cleared");
         }
 
         public bool IsReady => isReady;

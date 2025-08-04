@@ -482,12 +482,7 @@ namespace LightItUp.Game
 				var missileController = FindObjectOfType<SeekingMissileController>();
 				if (missileController != null)
 				{
-					Debug.Log("[GameLevel] Resetting missile controller for new level");
 					missileController.ResetLevelUsage();
-				}
-				else
-				{
-					Debug.LogWarning("[GameLevel] No SeekingMissileController found to reset!");
 				}
 			}
 
