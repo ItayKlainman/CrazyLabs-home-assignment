@@ -28,8 +28,7 @@ namespace LightItUp.UI
 
         private void Awake()
         {
-            ValidateCriticalComponents();
-            FindMissingReferences();
+            SetupComponents();
         }
 
         private void Start()
@@ -51,14 +50,14 @@ namespace LightItUp.UI
             }
         }
 
-        private void ValidateCriticalComponents()
+        private void SetupComponents()
         {
             if (buttonImage == null)
             {
                 buttonImage = GetComponent<Image>();
                 if (buttonImage == null)
                 {
-                    LogCriticalError("Missing Image component! This is critical for button functionality.");
+                    Debug.LogError($"[{gameObject.name}] SeekingMissileButton: Missing Image component!");
                 }
             }
 
@@ -67,20 +66,14 @@ namespace LightItUp.UI
                 missileController = FindObjectOfType<SeekingMissileController>();
                 if (missileController == null)
                 {
-                    LogCriticalError("No SeekingMissileController found in scene! This is critical for button functionality.");
+                    Debug.LogError($"[{gameObject.name}] SeekingMissileButton: No SeekingMissileController found in scene!");
                 }
             }
-        }
 
-        private void LogCriticalError(string message)
-        {
-            Debug.LogError($"[{gameObject.name}] SeekingMissileButton: {message}");
-        }
-
-        private void FindMissingReferences()
-        {
             if (config == null)
+            {
                 config = Resources.Load<SeekingMissileConfig>("SeekingMissileConfig");
+            }
         }
 
         private void OnMissilesSpawned()

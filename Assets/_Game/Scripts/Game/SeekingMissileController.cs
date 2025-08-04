@@ -67,7 +67,7 @@ namespace LightItUp.Game
 
             for (int i = 0; i < config.missileCount; i++)
             {
-                SpawnMissileAtPlayerPosition();
+                SpawnMissile();
                 
                 if (i < config.missileCount - 1)
                 {
@@ -79,7 +79,7 @@ namespace LightItUp.Game
             OnMissilesSpawned?.Invoke();
         }
 
-        private void SpawnMissileAtPlayerPosition()
+        private void SpawnMissile()
         {
             Vector3 spawnPosition = playerController.transform.position;
             SeekingMissile missile = ObjectPool.GetSeekingMissile();
@@ -90,7 +90,7 @@ namespace LightItUp.Game
                 missile.transform.rotation = Quaternion.identity;
                 missile.Initialize(config);
                 missile.OnMissileDestroyed += OnMissileDestroyed;
-                missile.OnMissileHitBlock += OnMissileHitBlockHandler;
+                missile.OnMissileHitBlock += HandleMissileHitBlock;
                 
                 activeMissiles.Add(missile);
 
@@ -115,7 +115,7 @@ namespace LightItUp.Game
             }
         }
 
-        private void OnMissileHitBlockHandler(SeekingMissile missile, BlockController block)
+        private void HandleMissileHitBlock(SeekingMissile missile, BlockController block)
         {
             OnMissileHitBlock?.Invoke();
         }

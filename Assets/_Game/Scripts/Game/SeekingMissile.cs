@@ -118,9 +118,9 @@ namespace LightItUp.Game
             Vector2 direction = (currentTarget.transform.position - transform.position).normalized;
             Vector2 desiredVelocity = direction * config.missileSpeed;
             
-            UpdateRotationTowardsDirection(direction);
-            UpdateVelocityTowardsTarget(desiredVelocity);
-            ApplyMovementToTarget();
+            UpdateRotation(direction);
+            UpdateVelocity(desiredVelocity);
+            ApplyMovement();
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -150,10 +150,7 @@ namespace LightItUp.Game
             ObjectPool.ReturnSeekingMissile(this);
         }
 
-        public void SetConfig(SeekingMissileConfig missileConfig)
-        {
-            config = missileConfig;
-        }
+
 
         public bool IsActive => isActive;
         public BlockController CurrentTarget => currentTarget;
@@ -168,8 +165,6 @@ namespace LightItUp.Game
                 DestroyMissile();
             }
         }
-
-
 
         private BlockController FindBestTarget()
         {
@@ -203,7 +198,7 @@ namespace LightItUp.Game
             return block != null && block.gameObject.activeInHierarchy && !block.IsLit;
         }
 
-        private void UpdateRotationTowardsDirection(Vector2 direction)
+        private void UpdateRotation(Vector2 direction)
         {
             float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             float currentAngle = transform.eulerAngles.z;
@@ -214,12 +209,12 @@ namespace LightItUp.Game
             transform.rotation = Quaternion.Euler(0, 0, newAngle);
         }
 
-        private void UpdateVelocityTowardsTarget(Vector2 desiredVelocity)
+        private void UpdateVelocity(Vector2 desiredVelocity)
         {
             velocity = Vector2.Lerp(velocity, desiredVelocity, Time.deltaTime * 5f);
         }
 
-        private void ApplyMovementToTarget()
+        private void ApplyMovement()
         {
             if (rb != null)
             {
