@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using LightItUp.Data;
+using LightItUp.Game;
 
 namespace LightItUp.Game
 {
@@ -22,8 +23,8 @@ namespace LightItUp.Game
         private bool isActive = true;
         private Vector2 velocity;
 
-        public System.Action<SeekingMissile> OnMissileDestroyed { get; private set; }
-        public System.Action<SeekingMissile, BlockController> OnMissileHitBlock { get; private set; }
+        public System.Action<SeekingMissile> OnMissileDestroyed { get; set; }
+        public System.Action<SeekingMissile, BlockController> OnMissileHitBlock { get; set; }
 
         private void Awake()
         {
@@ -107,7 +108,7 @@ namespace LightItUp.Game
 
         private void FindTarget()
         {
-            if (!IsConfigValid()) return;
+            if (config == null) return;
 
             currentTarget = FindBestTarget();
         }

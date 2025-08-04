@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using LightItUp.Data;
+using LightItUp.Game;
 
 namespace LightItUp.Game
 {
@@ -18,9 +19,9 @@ namespace LightItUp.Game
         private bool hasBeenUsedThisLevel = false;
         private bool isSpawning = false;
 
-        public System.Action OnMissilesSpawned { get; private set; }
-        public System.Action OnMissilesCompleted { get; private set; }
-        public System.Action OnMissileHitBlock { get; private set; }
+        public System.Action OnMissilesSpawned { get; set; }
+        public System.Action OnMissilesCompleted { get; set; }
+        public System.Action OnMissileHitBlock { get; set; }
 
         private void Awake()
         {
@@ -29,18 +30,14 @@ namespace LightItUp.Game
 
         private void FindMissingReferences()
         {
-            if (cameraFocus == null)
-            {
-                var player = FindObjectOfType<PlayerController>();
-                if (player != null)
-                {
-                    cameraFocus = player.camFocus;
-                }
-            }
-
             if (playerController == null)
             {
                 playerController = FindObjectOfType<PlayerController>();
+            }
+
+            if (cameraFocus == null && playerController != null)
+            {
+                cameraFocus = playerController.camFocus;
             }
         }
 
@@ -49,12 +46,7 @@ namespace LightItUp.Game
             ResetLevelUsage();
         }
 
-
-
-        public bool CanUseMissiles()
-        {
-            return config != null && config.isEnabled && !hasBeenUsedThisLevel && !isSpawning;
-        }
+        public bool CanUseMissiles() => config != null && config.isEnabled && !hasBeenUsedThisLevel && !isSpawning;
 
         public void SpawnMissiles()
         {
@@ -75,7 +67,7 @@ namespace LightItUp.Game
 
             for (int i = 0; i < config.missileCount; i++)
             {
-                SpawnSingleMissile();
+                SpawnMissileAtPlayerPosition();
                 
                 if (i < config.missileCount - 1)
                 {
@@ -87,10 +79,8 @@ namespace LightItUp.Game
             OnMissilesSpawned?.Invoke();
         }
 
-        private void SpawnSingleMissile()
+        private void SpawnMissileAtPlayerPosition()
         {
-            if (playerController == null) return;
-
             Vector3 spawnPosition = playerController.transform.position;
             SeekingMissile missile = ObjectPool.GetSeekingMissile();
             
@@ -117,10 +107,7 @@ namespace LightItUp.Game
 
         private void OnMissileDestroyed(SeekingMissile missile)
         {
-            if (activeMissiles.Contains(missile))
-            {
-                activeMissiles.Remove(missile);
-            }
+            activeMissiles.Remove(missile);
 
             if (activeMissiles.Count == 0)
             {
@@ -137,10 +124,7 @@ namespace LightItUp.Game
         {
             foreach (var missile in activeMissiles)
             {
-                if (missile != null)
-                {
-                    missile.DestroyMissile();
-                }
+                missile?.DestroyMissile();
             }
             activeMissiles.Clear();
         }
@@ -154,5 +138,10 @@ namespace LightItUp.Game
         public bool HasBeenUsedThisLevel => hasBeenUsedThisLevel;
         public int ActiveMissileCount => activeMissiles.Count;
         public bool IsSpawning => isSpawning;
+
+        public void SetConfig(SeekingMissileConfig missileConfig)
+        {
+            config = missileConfig;
+        }
     }
 } 
