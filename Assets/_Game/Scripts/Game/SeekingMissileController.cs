@@ -9,15 +9,13 @@ namespace LightItUp.Game
     public class SeekingMissileController : MonoBehaviour
     {
         [Header("Configuration")]
-        [SerializeField] private SeekingMissileConfig config;
-        
-        [Header("References")]
-        [SerializeField] private CameraFocus cameraFocus;
-        [SerializeField] private PlayerController playerController;
+        [SerializeField] private SeekingMissileConfig config; 
 
         private List<SeekingMissile> activeMissiles = new List<SeekingMissile>();
         private bool hasBeenUsedThisLevel = false;
         private bool isSpawning = false;
+        private PlayerController playerController;
+        private CameraFocus cameraFocus;
 
         public System.Action OnMissilesSpawned { get; set; }
         public System.Action OnMissilesCompleted { get; set; }
@@ -32,7 +30,15 @@ namespace LightItUp.Game
         {
             if (playerController == null)
             {
-                playerController = FindObjectOfType<PlayerController>();
+                var gameLevel = GameManager.Instance?.currentLevel;
+                if (gameLevel != null && gameLevel.player != null)
+                {
+                    playerController = gameLevel.player;
+                }
+                else
+                {
+                    playerController = FindObjectOfType<PlayerController>();
+                }
             }
 
             if (cameraFocus == null && playerController != null)
@@ -51,6 +57,13 @@ namespace LightItUp.Game
         public void SpawnMissiles()
         {
             if (!CanUseMissiles()) return;
+
+            FindMissingReferences();
+            if (playerController == null)
+            {
+                Debug.LogWarning("SeekingMissileController: No player found, cannot spawn missiles");
+                return;
+            }
 
             StartCoroutine(SpawnMissilesCoroutine());
         }
@@ -107,9 +120,7 @@ namespace LightItUp.Game
 
         private void OnMissileDestroyed(SeekingMissile missile)
         {
-            activeMissiles.Remove(missile);
-
-            if (activeMissiles.Count == 0)
+            if (activeMissiles.Remove(missile) && activeMissiles.Count == 0)
             {
                 OnMissilesCompleted?.Invoke();
             }
@@ -122,11 +133,13 @@ namespace LightItUp.Game
 
         public void ClearActiveMissiles()
         {
-            foreach (var missile in activeMissiles)
+            var missilesToDestroy = new List<SeekingMissile>(activeMissiles);
+            activeMissiles.Clear();
+            
+            foreach (var missile in missilesToDestroy)
             {
                 missile?.DestroyMissile();
             }
-            activeMissiles.Clear();
         }
 
         public void ResetLevelUsage()
@@ -142,6 +155,11 @@ namespace LightItUp.Game
         public void SetConfig(SeekingMissileConfig missileConfig)
         {
             config = missileConfig;
+        }
+
+        public void RefreshReferences()
+        {
+            FindMissingReferences();
         }
     }
 } 
