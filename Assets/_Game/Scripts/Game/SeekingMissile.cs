@@ -201,11 +201,6 @@ namespace LightItUp.Game
             {
                 if (!IsValidTargetBlock(block)) continue;
 
-                if (config.prioritizeRegularBlocks && (block.useExplode || block.useMove))
-                {
-                    continue;
-                }
-
                 if (!targetedBlocks.Contains(block))
                 {
                     validTargets.Add(block);
@@ -248,11 +243,6 @@ namespace LightItUp.Game
             foreach (var block in currentLevel.blocks)
             {
                 if (!IsValidTargetBlock(block)) continue;
-
-                if (config.prioritizeRegularBlocks && (block.useExplode || block.useMove))
-                {
-                    continue;
-                }
 
                 validBlocks.Add(block);
             }

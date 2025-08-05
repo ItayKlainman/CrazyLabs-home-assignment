@@ -47,11 +47,6 @@ namespace LightItUp.Game
                     continue;
                 }
 
-                if (config.prioritizeRegularBlocks && (block.useExplode || block.useMove))
-                {
-                    continue;
-                }
-
                 validTargets.Add(block);
             }
 

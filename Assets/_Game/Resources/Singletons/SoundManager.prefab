@@ -232,7 +232,7 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 8ae871c378ddd423b8697858bac44a5f, type: 3}
     volume: 0.871
   - clipName: MissileLaunch
-    clip: {fileID: 8300000, guid: 9f2541e97300a47bba44829e37e0f28f, type: 3}
+    clip: {fileID: 8300000, guid: c6db566df7b984816aeec04415a0b288, type: 3}
     volume: 0.871
   - clipName: MissileHit
     clip: {fileID: 8300000, guid: 3db2ae421e5a6410a9bcc0dcdc4ce5e4, type: 3}

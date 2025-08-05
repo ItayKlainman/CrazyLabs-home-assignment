@@ -2,7 +2,6 @@ using UnityEngine;
 
 namespace LightItUp.Game
 {
-    [CreateAssetMenu(fileName = "SeekingMissileConfig", menuName = "LightItUp/SeekingMissileConfig")]
     public class SeekingMissileConfig : ScriptableObject
     {
         [Header("Feature Toggle")]
@@ -35,8 +34,7 @@ namespace LightItUp.Game
         public float spawnDelay = 0.2f;
 
         [Header("Targeting")]
-        [Tooltip("Target regular blocks first before special blocks")]
-        public bool prioritizeRegularBlocks = true;
+        // Targeting logic simplified - missiles target any unlit block
 
         [Header("Visual")]
         [Tooltip("Missile appearance color")]
