@@ -17,20 +17,32 @@ namespace LightItUp.Game
             reservedTargets.Clear();
 
             var currentLevel = GameManager.Instance?.currentLevel;
-            if (currentLevel?.blocks == null) return;
+            if (currentLevel?.blocks == null) 
+            {
+                Debug.LogWarning("[TargetManager] No current level or blocks found");
+                return;
+            }
 
+            int validTargets = 0;
             foreach (var block in currentLevel.blocks)
             {
                 if (IsValidTarget(block))
                 {
                     availableTargets.Add(block);
+                    validTargets++;
                 }
             }
+            
+            Debug.Log($"[TargetManager] Initialized with {validTargets} valid targets out of {currentLevel.blocks.Count} total blocks");
         }
 
         public BlockController GetNextTarget(Vector3 missilePosition, SeekingMissileConfig config)
         {
-            if (availableTargets.Count == 0) return null;
+            if (availableTargets.Count == 0) 
+            {
+                Debug.LogWarning("[TargetManager] No available targets in pool");
+                return null;
+            }
 
             var validTargets = new List<BlockController>();
 
@@ -49,13 +61,19 @@ namespace LightItUp.Game
                 validTargets.Add(block);
             }
 
-            if (validTargets.Count == 0) return null;
+            if (validTargets.Count == 0) 
+            {
+                Debug.LogWarning($"[TargetManager] No valid targets in range. Available: {availableTargets.Count}, Detection radius: {config.detectionRadius}");
+                return null;
+            }
 
             // Choose a random target from valid targets
             var selectedTarget = validTargets[Random.Range(0, validTargets.Count)];
             
             // Reserve the target
             ReserveTarget(selectedTarget);
+            
+            Debug.Log($"[TargetManager] Assigned target {selectedTarget.name} to missile. Available: {availableTargets.Count}, Reserved: {reservedTargets.Count}");
             
             return selectedTarget;
         }
@@ -77,6 +95,7 @@ namespace LightItUp.Game
                 if (IsValidTarget(target))
                 {
                     availableTargets.Add(target);
+                    Debug.Log($"[TargetManager] Released target {target.name} back to pool. Available: {availableTargets.Count}, Reserved: {reservedTargets.Count}");
                 }
             }
         }

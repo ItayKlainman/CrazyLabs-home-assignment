@@ -67,6 +67,12 @@ namespace LightItUp.Game
             FindMissingReferences();
             if (playerController == null) return;
 
+            // Ensure target pool is initialized
+            if (SeekingMissileTargetManager.Instance != null)
+            {
+                SeekingMissileTargetManager.Instance.InitializeTargetPool();
+            }
+
             StartCoroutine(SpawnMissilesCoroutine());
         }
 

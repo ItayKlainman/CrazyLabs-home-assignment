@@ -34,6 +34,8 @@ namespace LightItUp.UI
 
         private void Start()
         {
+            SetupComponents();
+            
             if (missileController != null)
             {
                 missileController.OnMissilesSpawned += OnMissilesSpawned;
@@ -91,6 +93,8 @@ namespace LightItUp.UI
         public void OnPointerClick(PointerEventData eventData)
         {
             if (!isReady || isUsed) return;
+            
+            if (config != null && !config.isEnabled) return;
 
             if (missileController != null)
             {
@@ -105,8 +109,16 @@ namespace LightItUp.UI
             
             if (missileController == null) return;
 
-            isReady = missileController.CanUseMissiles();
-            isUsed = missileController.HasBeenUsedThisLevel;
+            if (config == null || !config.isEnabled)
+            {
+                isReady = false;
+                isUsed = false;
+            }
+            else
+            {
+                isReady = missileController.CanUseMissiles();
+                isUsed = missileController.HasBeenUsedThisLevel;
+            }
 
             ButtonState currentState = GetCurrentState();
             ApplyVisualState(currentState);
@@ -168,7 +180,15 @@ namespace LightItUp.UI
         {
             isResetting = true;
             isUsed = false;
-            isReady = true;
+            
+            if (config == null || !config.isEnabled)
+            {
+                isReady = false;
+            }
+            else
+            {
+                isReady = true;
+            }
             
             ButtonState currentState = GetCurrentState();
             ApplyVisualState(currentState);

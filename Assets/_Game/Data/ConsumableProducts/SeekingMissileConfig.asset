@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SeekingMissileConfig
   m_EditorClassIdentifier: 
   isEnabled: 1
-  missileCount: 3
+  missileCount: 10
   missileSpeed: 10
   rotationSpeed: 200
   maxLifetime: 10
@@ -23,6 +23,6 @@ MonoBehaviour:
   prioritizeRegularBlocks: 1
   usePathfinding: 0
   missileColor: {r: 1, g: 0, b: 0, a: 1}
-  missileSize: 0.5
+  missileSize: 1
   includeInCameraTracking: 1
   cameraTrackingDuration: 3

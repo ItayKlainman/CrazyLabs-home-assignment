@@ -98,6 +98,16 @@ namespace LightItUp.Game
             if (currentTarget == null || !currentTarget.gameObject.activeInHierarchy)
             {
                 FindTarget();
+                
+                // If still no target after trying, self-destruct after a short delay
+                if (currentTarget == null)
+                {
+                    if (lifetime > 2f) // Give 2 seconds to find a target
+                    {
+                        DestroyMissile();
+                        return;
+                    }
+                }
             }
             
             if (currentTarget != null)
@@ -146,15 +156,15 @@ namespace LightItUp.Game
             ApplyImpactForce(block);
             block.Collide();
             OnMissileHitBlock?.Invoke(this, block);
-            DestroyMissile();
+            DestroyMissile(true); // true = hit target
         }
 
-        public void DestroyMissile()
+        public void DestroyMissile(bool hitTarget = false)
         {
             if (!isActive) return;
 
-            // Release target back to pool if it wasn't hit
-            if (currentTarget != null && SeekingMissileTargetManager.Instance != null)
+            // Only release target back to pool if it wasn't hit
+            if (currentTarget != null && SeekingMissileTargetManager.Instance != null && !hitTarget)
             {
                 SeekingMissileTargetManager.Instance.ReleaseTarget(currentTarget);
             }

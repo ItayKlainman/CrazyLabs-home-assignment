@@ -6952,7 +6952,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 16.872278, y: 1}
+  m_Size: {x: 16.88351, y: 1}
   m_EdgeRadius: 0
 --- !u!1001 &560819843
 PrefabInstance:
@@ -14151,7 +14151,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 8.936139, y: 0}
+  m_Offset: {x: 8.941755, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -15328,7 +15328,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 16.872278, y: 1}
+  m_Size: {x: 16.88351, y: 1}
   m_EdgeRadius: 0
 --- !u!1 &877802609
 GameObject:
@@ -15564,7 +15564,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -8.936139, y: 0}
+  m_Offset: {x: -8.941755, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -19052,6 +19052,14 @@ PrefabInstance:
     m_TransformParent: {fileID: 877802610}
     m_Modifications:
     - target: {fileID: 98947561, guid: 0654574735289a446ae3ca1fbd3b45d2, type: 3}
+      propertyPath: usedColor.a
+      value: 0.6666667
+      objectReference: {fileID: 0}
+    - target: {fileID: 98947561, guid: 0654574735289a446ae3ca1fbd3b45d2, type: 3}
+      propertyPath: disabledColor.a
+      value: 0.77254903
+      objectReference: {fileID: 0}
+    - target: {fileID: 98947561, guid: 0654574735289a446ae3ca1fbd3b45d2, type: 3}
       propertyPath: missileController
       value: 
       objectReference: {fileID: 1036153231}
@@ -20117,9 +20125,9 @@ MonoBehaviour:
     one-time uses\n\nAffiliates;\nService providers; and\nGovernment agencies\tAffiliates
     that are not under common branding;\nAdvertising/marketing companies;\nAdvertising
     networks;\nData analytics providers; and\nSocial networks\nInferences drawn from
-    the above information about your predicted characteristics and preferences\n\n\n\n\n
-    \n\nConsumers\n \n\nMarketing;\nAdvertising;\n\nLegal compliance;\n\nDetecting
-    and protecting against security incidents, fraud, and illegal activity;\n\nDebugging;\n\nPerforming
+    the above information about your predicted characteristics and preferences\n\n\n\n\n\n\nConsumers\n
+    \n\nMarketing;\nAdvertising;\n\nLegal compliance;\n\nDetecting and protecting
+    against security incidents, fraud, and illegal activity;\n\nDebugging;\n\nPerforming
     services (for us or our service provider) such as account servicing, processing
     orders and payments, and analytics;\n\nInternal research for technological improvement;\n\nInternal
     operations;\n\nActivities to maintain and improve our services; and\n\nOther
@@ -20827,7 +20835,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 1
-  m_Size: {x: 16.872278, y: 30}
+  m_Size: {x: 16.88351, y: 30}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
