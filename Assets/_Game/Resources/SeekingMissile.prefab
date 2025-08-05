@@ -115,7 +115,7 @@ TrailRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4487386372656988650}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -221,7 +221,7 @@ MonoBehaviour:
   col: {fileID: 5584183659332192899}
   spriteRenderer: {fileID: 4487386372656988646}
   trailRenderer: {fileID: 4487386372656988647}
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: 1c7aee57f98e14dcaa89cb9f59f9988c, type: 2}
 --- !u!58 &5584183659332192899
 CircleCollider2D:
   m_ObjectHideFlags: 0

@@ -98,11 +98,15 @@ namespace LightItUp.Data
 
         public static void PrewarmSeekingMissiles(int count)
         {
+            Debug.Log($"[31] PrewarmSeekingMissiles called with count: {count}");
             for (int i = 0; i < count; i++)
             {
                 var missile = Instance.seekingMissiles.GetObject();
+                Debug.Log($"[32] Created missile {i + 1}: {missile != null}");
                 Instance.seekingMissiles.ReturnObject(missile);
+                Debug.Log($"[33] Returned missile {i + 1} to pool");
             }
+            Debug.Log($"[34] Prewarm complete. Pool status: {Instance.seekingMissiles.UnusedCount} unused, {Instance.seekingMissiles.UsedCount} used");
         }
         public static void ReturnSeekingMissile(SeekingMissile missile)
         {
@@ -115,6 +119,9 @@ namespace LightItUp.Data
         Transform pivot;
         List<T> unusedObjects;
         List<T> usedObjects;
+        
+        public int UnusedCount => unusedObjects.Count;
+        public int UsedCount => usedObjects.Count;
 
         public ObjectPool(T prefab, int startCount, Transform pivot) {
             unusedObjects = new List<T>();

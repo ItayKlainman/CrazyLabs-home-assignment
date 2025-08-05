@@ -35,15 +35,8 @@ namespace LightItUp.Game
         public float spawnDelay = 0.2f;
 
         [Header("Targeting")]
-        [Tooltip("Target search range")]
-        [Range(5f, 50f)]
-        public float detectionRadius = 20f;
-
         [Tooltip("Target regular blocks first before special blocks")]
         public bool prioritizeRegularBlocks = true;
-
-        [Tooltip("Future A* pathfinding implementation")]
-        public bool usePathfinding = false;
 
         [Header("Visual")]
         [Tooltip("Missile appearance color")]

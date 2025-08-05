@@ -78,35 +78,47 @@ namespace LightItUp.Game
 
         private IEnumerator SpawnMissilesCoroutine()
         {
-            if (config == null || playerController == null) yield break;
+            Debug.Log("[1] SpawnMissilesCoroutine started");
+            if (config == null || playerController == null) 
+            {
+                Debug.Log("[2] Config or player is null, breaking");
+                yield break;
+            }
 
             isSpawning = true;
             hasBeenUsedThisLevel = true;
 
             ClearActiveMissiles();
-            ObjectPool.PrewarmSeekingMissiles(config.missileCount);
+
+            Debug.Log($"[3] Starting to spawn {config.missileCount} missiles");
+            Debug.Log($"[35] Pool status before spawning: {ObjectPool.Instance.seekingMissiles.UnusedCount} unused, {ObjectPool.Instance.seekingMissiles.UsedCount} used");
 
             for (int i = 0; i < config.missileCount; i++)
             {
+                Debug.Log($"[4] Spawning missile {i + 1}/{config.missileCount}");
                 SpawnMissile();
                 
                 if (i < config.missileCount - 1)
                 {
+                    Debug.Log($"[5] Waiting {config.spawnDelay}s before next missile");
                     yield return new WaitForSeconds(config.spawnDelay);
                 }
             }
 
+            Debug.Log($"[6] Finished spawning. Active missiles: {activeMissiles.Count}");
             isSpawning = false;
             OnMissilesSpawned?.Invoke();
         }
 
         private void SpawnMissile()
         {
+            Debug.Log("[7] SpawnMissile() called");
             Vector3 spawnPosition = playerController.transform.position;
             Vector3 randomOffset = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0f);
             spawnPosition += randomOffset;
             
             SeekingMissile missile = ObjectPool.GetSeekingMissile();
+            Debug.Log($"[8] Got missile from pool: {missile != null}");
             
             if (missile != null)
             {
@@ -117,6 +129,7 @@ namespace LightItUp.Game
                 missile.OnMissileHitBlock += HandleMissileHitBlock;
                 
                 activeMissiles.Add(missile);
+                Debug.Log($"[9] Missile spawned successfully. Total active: {activeMissiles.Count}");
 
                 SoundManager.PlaySound(SoundNames.MissileLaunch);
 
@@ -129,14 +142,21 @@ namespace LightItUp.Game
                     }
                 }
             }
+            else
+            {
+                Debug.LogError("[10] Failed to get missile from pool!");
+            }
         }
 
         private void OnMissileDestroyed(SeekingMissile missile)
         {
+            Debug.Log($"[11] Missile destroyed. Active missiles before: {activeMissiles.Count}");
             if (activeMissiles.Remove(missile) && activeMissiles.Count == 0)
             {
+                Debug.Log("[12] All missiles completed");
                 OnMissilesCompleted?.Invoke();
             }
+            Debug.Log($"[13] Active missiles after: {activeMissiles.Count}");
         }
 
         private void HandleMissileHitBlock(SeekingMissile missile, BlockController block)
@@ -171,6 +191,13 @@ namespace LightItUp.Game
             if (SeekingMissileTargetManager.Instance != null)
             {
                 SeekingMissileTargetManager.Instance.InitializeTargetPool();
+            }
+            
+            // Prewarm the missile pool for this level
+            if (config != null)
+            {
+                ObjectPool.PrewarmSeekingMissiles(config.missileCount);
+                Debug.Log($"[30] Prewarmed missile pool with {config.missileCount} missiles");
             }
             
             TryResetButton();

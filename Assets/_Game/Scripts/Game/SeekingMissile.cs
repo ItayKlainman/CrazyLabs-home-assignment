@@ -123,10 +123,12 @@ namespace LightItUp.Game
             if (SeekingMissileTargetManager.Instance != null)
             {
                 currentTarget = SeekingMissileTargetManager.Instance.GetNextTarget(transform.position, config);
+                Debug.Log($"[15] Found target via TargetManager: {currentTarget != null}");
             }
             else
             {
                 currentTarget = FindBestTarget();
+                Debug.Log($"[16] Found target via fallback: {currentTarget != null}");
             }
         }
 
@@ -185,6 +187,7 @@ namespace LightItUp.Game
             lifetime += Time.deltaTime;
             if (lifetime >= config.maxLifetime)
             {
+                Debug.Log($"[14] Missile destroyed by lifetime timeout. Lifetime: {lifetime:F1}s, Max: {config.maxLifetime}s");
                 DestroyMissile();
             }
         }
@@ -201,8 +204,7 @@ namespace LightItUp.Game
             {
                 if (!IsValidTargetBlock(block)) continue;
 
-                float distance = Vector2.Distance(transform.position, block.transform.position);
-                if (distance > config.detectionRadius) continue;
+                // Distance limitation removed - can target any block in the level
 
                 if (config.prioritizeRegularBlocks && (block.useExplode || block.useMove))
                 {
@@ -252,8 +254,7 @@ namespace LightItUp.Game
             {
                 if (!IsValidTargetBlock(block)) continue;
 
-                float distance = Vector2.Distance(transform.position, block.transform.position);
-                if (distance > config.detectionRadius) continue;
+                // Distance limitation removed - can target any block in the level
 
                 if (config.prioritizeRegularBlocks && (block.useExplode || block.useMove))
                 {
